@@ -18,7 +18,16 @@
 * − 1 pcs gyroscope MPU6050 
 */ 
 
+// Includes
+#include <Arduino_LSM6DS3.h>
+#include <MadgwickAHRS.h>
 #include <PID_v1.h> // Include PID library 
+
+// Defines
+#define SAMPLE_RATE 10  // in Hz
+
+// Constructors
+Madgwick filter;  // Madgwick algorithm for roll, pitch, and yaw calculations
 
 // Varibles for motor control
 const int inaPin = 13; 
@@ -53,7 +62,7 @@ float real_output; // Adjusting outputsignal
 // Define PID controller 
 PID PID_controller(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT); 
 
-/*
+/* For Hall effect sensors
 // Pin for reading hall effect sensor values 
 int magnetSensor1 = A3; 
 int magnetSensor2 = A2; 
@@ -100,8 +109,18 @@ void setup() {
 #endif 
 
 // initialize serial communication
-Serial.begin(115200); 
-while(!Serial); // wait for Leonardo enumeration, others continue immediately 
+Serial.begin(115200);  // initialize serial bus (Serial Monitor) 
+while(!Serial); // wait for serial initialization
+Serial.print("LSM6DS3 IMU initialization ");
+if(IMU.begin()){  // initialize IMU
+  Serial.println("completed successfully.");
+} else {
+  Serial.println("FAILED.");
+  IMU.end();
+  while(1);
+  }
+  Serial.println();
+  filter.begin(SAMPLE_RATE);  // initialize Madgwick filter
 
 // NOTE: 8MHz or slower host processors, like the Teensy @ 3.3v or Ardunio 
 // Pro Mini running at 3.3v, cannot handle this baud rate reliably due to 
@@ -141,8 +160,16 @@ void loop() {
     // blink LED to indicate activity 
     blinkState = !blinkState; 
     digitalWrite(LED_PIN, blinkState);
+
+    static unsigned long previousTime = millis();
+    unsigned long currentTime = millis();
+    if (currentTime - previousTime >= 1000/SAMPLE_RATE){
+      // printValues();
+      printRotationAngles();
+      previousTime = millis();
+    }
   
-  roll_deg = 30 * 180/M_PI+86.5; // Stores data from the gyro in a varible, was 
+  roll_deg = filter.getRoll() * 180/M_PI+86.5; // Stores data from the gyro in a varible, was 
     // adjusted so the angle is 0 when the cube is in horizontal position. 
   
   input = roll_deg; // Uses angle as input signal for the PID controller. 
@@ -221,5 +248,43 @@ Serial.println(output); // Print output
 
 // Output pwm signal. 
 analogWrite(pwmPin, pwmSignal); 
+}
 
+// Prints IMU values.
+void printValues(){
+   char buffer[8];    // string buffer for use with dtostrf() function
+   float ax, ay, az;  // accelerometer values
+   float gx, gy, gz;  // gyroscope values
+
+   // Retrieve and print IMU values
+   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()
+      && IMU.readAcceleration(ax, ay, az) && IMU.readGyroscope(gx, gy, gz)) {
+      Serial.print("ax = ");  Serial.print(dtostrf(ax, 4, 1, buffer));  Serial.print(" g, ");
+      Serial.print("ay = ");  Serial.print(dtostrf(ay, 4, 1, buffer));  Serial.print(" g, ");
+      Serial.print("az = ");  Serial.print(dtostrf(az, 4, 1, buffer));  Serial.print(" g, ");
+      Serial.print("gx = ");  Serial.print(dtostrf(gx, 7, 1, buffer));  Serial.print(" °/s, ");
+      Serial.print("gy = ");  Serial.print(dtostrf(gy, 7, 1, buffer));  Serial.print(" °/s, ");
+      Serial.print("gz = ");  Serial.print(dtostrf(gz, 7, 1, buffer));  Serial.println(" °/s");
+   }
+}
+
+// Prints rotation angles (roll, pitch, and yaw) calculated using the
+// Madgwick algorithm.
+// Note: Yaw is relative, not absolute, based on initial starting position.
+// Calculating a true yaw (heading) angle requires an additional data source,
+// such as a magnometer.
+void printRotationAngles(){
+   char buffer[5];    // string buffer for use with dtostrf() function
+   float ax, ay, az;  // accelerometer values
+   float gx, gy, gz;  // gyroscope values
+
+   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()
+      && IMU.readAcceleration(ax, ay, az) && IMU.readGyroscope(gx, gy, gz)){
+      filter.updateIMU(gx, gy, gz, ax, ay, az);  // update roll, pitch, and yaw values
+
+      // Print rotation angles
+      Serial.print("Roll = ");  Serial.print(dtostrf(filter.getRoll(), 4, 0, buffer)); Serial.print(" °, ");
+      Serial.print("Pitch = ");  Serial.print(dtostrf(filter.getPitch(), 4, 0, buffer)); Serial.print(" °, ");
+      Serial.print("Yaw = ");  Serial.print(dtostrf(filter.getYaw(), 4, 0, buffer)); Serial.println(" °");
+   }
 }
