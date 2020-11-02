@@ -1,21 +1,16 @@
-/* KEX13 
+/*
+* Resource:
 * PID Regulated Balancing Cube 
 * PID Reglerad Balanserande Kub 
 * Date 2020−05−29 
 * Written by: Sebastian Brandmaier och Denis Ramsden 
-* Examiner : Nihad Subasic 
-* TRITA−ITM−Ex: 2020:33 
-* Course code : MF133X 
 * 
-* Bachelor thesis at KTH in mechatronics 
 * 
-* This code tries to balance a cube with help of reaction wheels. 
+* This code tries to control a satellite's attitude with a reaction wheel. 
 * The components for this used is: 
-* − 1 pcs Arduino UNO 
-* − 1 pcs 24V brushed DC motor 
-* − 1 pcs motor driver VNH3SP30 
-* − 2 pcs hall effect sensor 
-* − 1 pcs gyroscope MPU6050 
+* − 1 pcs Arduino UNO WiFi Rev 2
+* − 1 pcs 12V brushless DC motor 
+* − 1 pcs motor driver  
 */ 
 
 // Includes
