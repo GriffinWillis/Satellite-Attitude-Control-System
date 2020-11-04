@@ -28,10 +28,7 @@ Madgwick filter;  // Madgwick algorithm for roll, pitch, and yaw calculations
 const int inaPin = 13; 
 const int inbPin = 9; 
 const int pwmPin = 11; 
-const int diagaPin = 10; 
-const int diagbPin = 12; 
-const int buttonPin = 2; 
-const int trimPin = A0; 
+const int buttonPin = 2;  
 int on = 0; 
 int i = 0; 
 double pwmSignal; 
@@ -132,9 +129,6 @@ pinMode(buttonPin, INPUT);
 pinMode(inaPin, OUTPUT); 
 pinMode(inbPin, OUTPUT); 
 pinMode(pwmPin, OUTPUT); 
-pinMode(diagaPin, INPUT); 
-pinMode(diagbPin, INPUT); 
-pinMode(trimPin, INPUT); 
 
 // Setup for PID controller 
 PID_controller.SetMode(AUTOMATIC); 
@@ -226,11 +220,11 @@ void loop() {
     // if((input>46) || (input<44)){
       if(output >= 0){ // Since arduino only works with positive current, the direction was swapped instead. 
       pwmSignal = output; 
-      digitalWrite(inaPin, LOW); //CW direction of motor. 
+      digitalWrite(inaPin, LOW); // CW direction of motor. 
       digitalWrite(inbPin, HIGH); 
     } else {
       pwmSignal = -1*output; 
-      digitalWrite(inaPin, HIGH); //CCW direction of motor. 
+      digitalWrite(inaPin, HIGH); // CCW direction of motor. 
       digitalWrite(inbPin, LOW); 
     }
   } 
@@ -279,7 +273,7 @@ void printRotationAngles(){
 
       // Print rotation angles
       Serial.print("Roll = ");  Serial.print(dtostrf(filter.getRoll(), 4, 0, buffer)); Serial.print(" °, ");
-      Serial.print("Pitch = ");  Serial.print(dtostrf(filter.getPitch(), 4, 0, buffer)); Serial.print(" °, ");
-      Serial.print("Yaw = ");  Serial.print(dtostrf(filter.getYaw(), 4, 0, buffer)); Serial.println(" °");
+      //Serial.print("Pitch = ");  Serial.print(dtostrf(filter.getPitch(), 4, 0, buffer)); Serial.print(" °, ");
+      //Serial.print("Yaw = ");  Serial.print(dtostrf(filter.getYaw(), 4, 0, buffer)); Serial.println(" °");
    }
 }
