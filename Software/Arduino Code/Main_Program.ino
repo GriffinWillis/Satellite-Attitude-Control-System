@@ -34,11 +34,14 @@ int i = 0;
 double pwmSignal; 
 
 // Motor constants 
-double k2 = 0.057; 
-double R = 2; 
+//double k2 = 0.057; 
+//double R = 2; 
 
 // Varible us for the gyro to be able to stabilze 
-double Time; 
+double Time;
+int buffersize=1000;     // Amount of readings used to average, make it higher to get more precision but sketch will be slower (default:1000)
+int mean_pitch,state=0;
+int pitch_offset;
 
 // PID−varibles 
 double input; 
@@ -48,7 +51,7 @@ double setpoint;
 //Different PID setups 
 double Kp = 50, Ki = 3, Kd = 0.3; // PID−parameters 
 
-float roll_deg; // stores the angle the cube is tilted 
+float pitch_deg; // stores the angle the cube is tilted 
 float real_output; // Adjusting outputsignal 
 
 // Define PID controller 
@@ -83,7 +86,6 @@ double U; // Voltage, number 0−255, 255 results in a 24V of output voltage.
   #include "Wire.h" 
 #endif 
 
-#define LED_PIN 13 
 bool blinkState = false;
 
 // ================================================================ 
@@ -101,7 +103,7 @@ void setup() {
 #endif 
 
 // initialize serial communication
-Serial.begin(115200);  // initialize serial bus (Serial Monitor) 
+Serial.begin(9600);  // initialize serial bus (Serial Monitor) 
 while(!Serial); // wait for serial initialization
 Serial.print("LSM6DS3 IMU initialization ");
 if(IMU.begin()){  // initialize IMU
@@ -148,20 +150,29 @@ PID_controller.SetOutputLimits(-255, 255);
 void loop() {
     // blink LED to indicate activity 
     blinkState = !blinkState; 
-    digitalWrite(LED_PIN, blinkState);
+    digitalWrite(LED_BUILTIN, blinkState);
 
     static unsigned long previousTime = millis();
     unsigned long currentTime = millis();
     if (currentTime - previousTime >= 1000/SAMPLE_RATE){
-      // printValues();
-      printRotationAngles();
+      //printValues();
+      //printRotationAngles();
       previousTime = millis();
     }
+
+  if (state==0){
+    Serial.println("\nCalculating offset...");
+    calibration();
+    Serial.print("pitch_offset= ");
+    Serial.println(pitch_offset);
+    state++;
+    delay(1000);
+  }
   
-  roll_deg = filter.getRoll() * 180/M_PI+86.5; // Stores data from the gyro in a varible, was 
+  pitch_deg = filter.getPitch() - pitch_offset; // Stores data from the gyro in a varible, was 
     // adjusted so the angle is 0 when the cube is in horizontal position. 
   
-  input = roll_deg; // Uses angle as input signal for the PID controller. 
+  input = pitch_deg; // Uses angle as input signal for the PID controller. 
 
 /* 
   //Calculation of the angular speed of the reaction wheels using Hall effect sensors.
@@ -229,11 +240,11 @@ void loop() {
     }
   } 
 
-Serial.print(roll_deg); // Print the angle in serial monitor. 
-Serial.print(" "); 
-Serial.print(input); // Print input 
-Serial.print(" "); 
-Serial.println(output); // Print output 
+//Serial.print(roll_deg); // Print the angle in serial monitor. 
+//Serial.print(" "); 
+//Serial.print(input); // Print input 
+//Serial.print(" "); 
+//Serial.println(output); // Print output 
 
 // Output pwm signal. 
 analogWrite(pwmPin, pwmSignal); 
@@ -272,8 +283,31 @@ void printRotationAngles(){
       filter.updateIMU(gx, gy, gz, ax, ay, az);  // update roll, pitch, and yaw values
 
       // Print rotation angles
-      Serial.print("Roll = ");  Serial.print(dtostrf(filter.getRoll(), 4, 0, buffer)); Serial.print(" °, ");
-      //Serial.print("Pitch = ");  Serial.print(dtostrf(filter.getPitch(), 4, 0, buffer)); Serial.print(" °, ");
-      //Serial.print("Yaw = ");  Serial.print(dtostrf(filter.getYaw(), 4, 0, buffer)); Serial.println(" °");
+      Serial.print("Roll = ");  Serial.print(dtostrf(filter.getRoll(), 4, 0, buffer)); Serial.println(" °, ");
+      Serial.print("Pitch = ");  Serial.print(dtostrf(filter.getPitch(), 4, 0, buffer)); Serial.print(" °, ");
+      Serial.print("Yaw = ");  Serial.print(dtostrf(filter.getYaw(), 4, 0, buffer)); Serial.println(" °");
    }
+}
+
+void calibration(){
+  long i=0,buff_pitch=0;
+
+  while (i<(buffersize+101)){
+   float ax, ay, az;  // accelerometer values
+   float gx, gy, gz;  // gyroscope values
+
+   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()
+      && IMU.readAcceleration(ax, ay, az) && IMU.readGyroscope(gx, gy, gz)){
+      filter.updateIMU(gx, gy, gz, ax, ay, az);}  // update roll, pitch, and yaw values
+    
+    if (i>100 && i<=(buffersize+100)){ //First 100 measures are discarded
+      buff_pitch=buff_pitch+filter.getPitch();
+    }
+    if (i==(buffersize+100)){
+      mean_pitch=buff_pitch/buffersize;
+      pitch_offset=-1*mean_pitch;
+    }
+    i++;
+    delay(2); //Needed so we don't get repeated measures
+  }
 }
