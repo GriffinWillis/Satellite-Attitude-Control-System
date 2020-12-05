@@ -48,8 +48,8 @@ const int  greenLED = 5;
 
 
 // Network
-char ssid[] = "Sarah's Iphone";     // your network SSID (name)
-char pass[] = "x10foswswvpee";  // your network password
+char ssid[] = "Airwave-5G-02-byz1w0xu1";     // your network SSID (name)
+char pass[] = "";  // your network password
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
