@@ -41,8 +41,10 @@
 #include <WiFiNINA.h>  // for use with Arduino Uno WiFi Rev2
 
 // Network
-char ssid[] = "Sarah's Iphone";     // your network SSID (name)
-char pass[] = "x10foswswvpee";  // your network password
+//char ssid[] = "Sarah's Iphone";     // your network SSID (name)
+//char pass[] = "x10foswswvpee";  // your network password
+char ssid[] = "Airwave-5G-02-byz1w0xu1";     // your network SSID (name)
+char pass[] = "";  // your network password
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
@@ -261,75 +263,75 @@ void setup() {
   }
 
   // Attempt to connect to WiFi network
-//  while (status != WL_CONNECTED) {
-//    Serial.print("Attempting to connect to network named: ");
-//    Serial.println(ssid);  // print the network name (SSID)
-//
-//    // Connect to WPA/WPA2 network.  Change this line if using open or WEP network.
-//    status = WiFi.begin(ssid, pass);
-//    delay(10000);  // wait 10 seconds for connection
-//  }
-//  server.begin();     // start the web server on port 80
-//  printWifiStatus();  // you're connected now, so print the status
-//  Serial.println();
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to network named: ");
+    Serial.println(ssid);  // print the network name (SSID)
+
+    // Connect to WPA/WPA2 network.  Change this line if using open or WEP network.
+    status = WiFi.begin(ssid, pass);
+    delay(10000);  // wait 10 seconds for connection
+  }
+  server.begin();     // start the web server on port 80
+  printWifiStatus();  // you're connected now, so print the status
+  Serial.println();
 }
 
 
 void loop() {
-        // if programming failed, don't try to do anything
-        if (!dmpReady) return;
-        // read a packet from FIFO
-        if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
-
-        #ifdef OUTPUT_TEAPOT
-            // display quaternion values in InvenSense Teapot demo format:
-            teapotPacket[2] = fifoBuffer[0];
-            teapotPacket[3] = fifoBuffer[1];
-            teapotPacket[4] = fifoBuffer[4];
-            teapotPacket[5] = fifoBuffer[5];
-            teapotPacket[6] = fifoBuffer[8];
-            teapotPacket[7] = fifoBuffer[9];
-            teapotPacket[8] = fifoBuffer[12];
-            teapotPacket[9] = fifoBuffer[13];
-            Serial.write(teapotPacket, 14);
-            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
-        #endif
-
-          #ifdef OUTPUT_READABLE_YAWPITCHROLL
-            // display Euler angles in degrees
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
-            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-        //    Serial.print("ypr\t");
-        //    Serial.print(ypr[0] * 180 / M_PI);
-        //    Serial.print("\t");
-        //    Serial.print(ypr[1] * 180 / M_PI);
-        //    Serial.print("\t");
-        //    Serial.print(ypr[2] * 180 / M_PI);
-            
-              mpu.dmpGetAccel(&aa, fifoBuffer);
-        //      Serial.print("\tRaw Accl XYZ\t");
-        //      Serial.print(aa.x);
-        //      Serial.print("\t");
-        //      Serial.print(aa.y);
-        //      Serial.print("\t");
-        //      Serial.print(aa.z);
-              mpu.dmpGetGyro(&gy, fifoBuffer);
-        //      Serial.print("\tRaw Gyro XYZ\t");
-        //      Serial.print(gy.x);
-        //      Serial.print("\t");
-        //      Serial.print(gy.y);
-        //      Serial.print("\t");
-        //      Serial.print(gy.z / 65.4);
-            
-        //    Serial.println();
-        
-        #endif
-        
-            // blink LED to indicate activity
-            blinkState = !blinkState;
-            digitalWrite(LED_PIN, blinkState);
-          }
+//        // if programming failed, don't try to do anything
+//        if (!dmpReady) return;
+//        // read a packet from FIFO
+//        if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+//
+//        #ifdef OUTPUT_TEAPOT
+//            // display quaternion values in InvenSense Teapot demo format:
+//            teapotPacket[2] = fifoBuffer[0];
+//            teapotPacket[3] = fifoBuffer[1];
+//            teapotPacket[4] = fifoBuffer[4];
+//            teapotPacket[5] = fifoBuffer[5];
+//            teapotPacket[6] = fifoBuffer[8];
+//            teapotPacket[7] = fifoBuffer[9];
+//            teapotPacket[8] = fifoBuffer[12];
+//            teapotPacket[9] = fifoBuffer[13];
+//            Serial.write(teapotPacket, 14);
+//            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
+//        #endif
+//
+//          #ifdef OUTPUT_READABLE_YAWPITCHROLL
+//            // display Euler angles in degrees
+//            mpu.dmpGetQuaternion(&q, fifoBuffer);
+//            mpu.dmpGetGravity(&gravity, &q);
+//            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+//        //    Serial.print("ypr\t");
+//        //    Serial.print(ypr[0] * 180 / M_PI);
+//        //    Serial.print("\t");
+//        //    Serial.print(ypr[1] * 180 / M_PI);
+//        //    Serial.print("\t");
+//        //    Serial.print(ypr[2] * 180 / M_PI);
+//            
+//              mpu.dmpGetAccel(&aa, fifoBuffer);
+//        //      Serial.print("\tRaw Accl XYZ\t");
+//        //      Serial.print(aa.x);
+//        //      Serial.print("\t");
+//        //      Serial.print(aa.y);
+//        //      Serial.print("\t");
+//        //      Serial.print(aa.z);
+//              mpu.dmpGetGyro(&gy, fifoBuffer);
+//        //      Serial.print("\tRaw Gyro XYZ\t");
+//        //      Serial.print(gy.x);
+//        //      Serial.print("\t");
+//        //      Serial.print(gy.y);
+//        //      Serial.print("\t");
+//        //      Serial.print(gy.z / 65.4);
+//            
+//        //    Serial.println();
+//        
+//        #endif
+//        
+//            // blink LED to indicate activity
+//            blinkState = !blinkState;
+//            digitalWrite(LED_PIN, blinkState);
+//          }
 
   
   WiFiClient client = server.available();  // listen for incoming clients
@@ -366,15 +368,14 @@ void loop() {
         // ================================================================
         // ===                      S.A.C. Loop                         ===
         // ================================================================
-        //setpoint = yaw;
-        setpoint = 90;
-
+          setpoint = yaw; // User input to slew to desired orientation.
+          
           yaw_deg = ypr[0] * 180 / M_PI; // Variable to hold current yaw angle of the satellite.
 
           if (setpoint > 0) {
         
             // Code for PID 
-          //setpoint = yaw; // User input to slew to desired orientation.
+          //setpoint = 90;
           input = yaw_deg; // Uses angle as input signal for the PID controller.
           
           if(micros()-Time > 8000000){  // Needed a delay so that the IMU could stabilaze, using delay() caused overflow. 
@@ -419,32 +420,20 @@ void showWebPage(WiFiClient client) {
   // The content of the HTTP response follows the header
   client.println("<h1>Satellite Attitude Control</h1>");
   client.println("<table border=1 style='text-align:center'>");
-  client.println("<tr><th>Component</th><th>Status</th><th>Angle</th></tr>");
 
-  // Red LED
-//  client.print("<tr><td>Red LED</td><td>");
-//  if (digitalRead(redLED)) {  // show colored status based on state of redLED
-//    client.print("<font style='color:green;'>ON</font>");
-//  } else {
-//    client.print("<font style='color:red;'>OFF</font>");
-//  }
-//  client.println("</td><td><a href='/redLED/on'>ON</a> / <a href='/redLED/off'>OFF</a></td></tr>");  // display redLED control links
+  client.println("<tr><th>Component</th><th>Power</th><th colspan='4'>Set Angle</th></tr>");
 
   // Attitude Orientation
-  client.print("<tr><td>Yaw</td><td>");
-//  if (digitalRead(yellowLED)) {  // show colored status based on state of yellowLED
-//    client.print("<font style='color:green;'>ON</font>");
-//  } else {
-//    client.print("<font style='color:red;'>OFF</font>");
-//  }
-
-  client.println("</td><td><a href='/0deg/on'>0</a> / <a href='/20deg/on'>20</a> / <a href='/45deg/on'>45</a></td></tr>");
+  client.print("<tr><td>Yaw</td>");
+  client.print("<td><a href='/off'>OFF</a></td>");
+  client.println("<td><a href='/20deg'>20</a></td>");
+  client.println("<td><a href='/45deg'>45</a></td>");
+  client.println("<td><a href='/90deg'>90</a></td>");
+  client.println("<td><a href='/180deg'>180</a></td></tr>");
 
   client.println("</table>");
-
-
-  Serial.println(yaw);
   
+  Serial.println(yaw);
   
   // The HTTP response ends with another blank line
   client.println();
@@ -453,12 +442,16 @@ void showWebPage(WiFiClient client) {
 
 
 void performRequest(String line) {
-  if (line.endsWith("GET /0deg/on")) {   // Turn off motor
+  if (line.endsWith("GET /off")) {   // Turn off motor
     yaw = 0;
-  } else if (line.endsWith("GET /20deg/on")) {   // Go to 20 deg
+  } else if (line.endsWith("GET /20deg")) {   // Go to 20 deg
     yaw = 20;
-  } else if (line.endsWith("GET /45deg/on")) {  // Go to 45 deg
+  } else if (line.endsWith("GET /45deg")) {  // Go to 45 deg
     yaw = 45;
+  } else if (line.endsWith("GET /90deg")) {  // Go to 90 deg
+    yaw = 90;
+  } else if (line.endsWith("GET /180deg")) {  // Go to 180 deg
+    yaw = 180;
   }
 }
 
