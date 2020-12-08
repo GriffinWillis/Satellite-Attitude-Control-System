@@ -1,16 +1,30 @@
-/*
-  WiFi Web Server
-  
-  This example is written for a network using WPA encryption.  For WEP, change
-  the Wifi.begin() call accordingly.
-  Replace yourNetwork and secretPassword in the Network section with the proper
-  credentials for your network.
-
-  Circuit:
-  * LEDs attached to pins 2, 3, and 5
-
-  Created by Tom Igoe on 11/25/2012
-  Modified by John Woolsey on 12/04/2018
+/* Single-Axis Satellite Attitude PID Control System Using a Reaction Wheel
+ *  
+ *  University of Missouri - Undergraduate Capstone Project - December 2020
+ *  By: Griffin Willis, Jess Emerson, Sarah Geisen, Tori La Rose
+ * 
+ * REFERENCES:
+ * 
+ * PID Control Loop - base code sourced from an example created
+ *    by Sebastian Brandmaier and Denis Ramsden's Bachelor's
+ *    Thesis in Mechatronics on a PID Regulated Balancing Cube.
+ * 
+ * MPU6050 - base code to gather acceleration/rotational data
+ *    sourced from Jeff Rowberg's Arduino libraries for the
+ *    MPU6050 inertial measurement unit (IMU).
+ * 
+ * WiFi Web Server - base code sourced from an example created 
+ *    by Tom Igoe on 11/25/2012. Written for a network using 
+ *    WPA encryption. An iPhone's personal hotspot was used 
+ *    as the host device to create the web server for the 
+ *    Arduino (client) to access.
+ *    
+ * All other code and implementation of existing code was 
+ * written by me, Griffin Willis.
+ *    
+ * DISCLAIMER: All Arduino code is open-source and free to the public. 
+ *             No patents were infringed upon.
+ * 
 */
 
 
@@ -18,10 +32,8 @@
 #include <WiFiNINA.h>  // for use with Arduino Uno WiFi Rev2
 
 // Network
-char ssid[] = "Sarah's Iphone";     // your network SSID (name)
-char pass[] = "x10foswswvpee";  // your network password
-//char ssid[] = "Jess's iPhone";     // your network SSID (name)
-//char pass[] = "demodemo";  // your network password
+char ssid[] = "Sarah's Iphone";   // your network SSID (name)
+char pass[] = "x10foswswvpee";    // your network password
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
