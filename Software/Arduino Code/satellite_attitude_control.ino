@@ -150,10 +150,10 @@ void setup() {
         Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
       
         // wait for ready
-//        Serial.println(F("\nSend any character to begin DMP programming and demo: "));
-//        while (Serial.available() && Serial.read()); // empty buffer
-//        while (!Serial.available());                 // wait for data
-//        while (Serial.available() && Serial.read()); // empty buffer again
+        Serial.println(F("\nSend any character to begin DMP programming and demo: "));
+        while (Serial.available() && Serial.read()); // empty buffer
+        while (!Serial.available());                 // wait for data
+        while (Serial.available() && Serial.read()); // empty buffer again
       
         // load and configure the DMP
         Serial.println(F("Initializing DMP..."));
@@ -330,8 +330,12 @@ void loop() {
         // ================================================================
           setpoint = yaw; // User input to slew to desired orientation.
           //setpoint = 90;  // Override setpoint (for debugging).
-          
+
           yaw_deg = ypr[0] * 180 / M_PI; // Variable to hold current yaw angle of the satellite.
+          
+          if (yaw_deg < 0) {      // Convert yaw range to 0-360deg.
+            yaw_deg = yaw_deg + 360;
+          }
 
           if (setpoint > 0) {
         
@@ -362,8 +366,7 @@ void loop() {
           
           //  Print values
           Serial.print("Setpoint: ");
-          //Serial.print(setpoint, 0);
-          Serial.print("180");
+          Serial.print(setpoint, 0);
           Serial.print("°");
           Serial.print("\t");
           Serial.print("Yaw: ");
@@ -373,6 +376,10 @@ void loop() {
           Serial.print("Power: ");
           Serial.print(pwmSignal / 255 * 100, 0);
           Serial.print(" %");
+          Serial.print("\t");
+          Serial.print("Angular rate: ");
+          Serial.print(gy.z / 65.4);
+          Serial.print(" °/s");
           Serial.println();
           
 }
@@ -388,14 +395,15 @@ void showWebPage(WiFiClient client) {
   // The content of the HTTP response follows the header
   client.println("<h1>Satellite Attitude Control</h1>");
   client.println("<table border=1 style='text-align:center'>");
-  client.println("<tr><th>Component</th><th>Power</th><th colspan='3'>Set Angle</th></tr>");
+  client.println("<tr><th>Component</th><th>Power</th><th colspan='4'>Set Angle</th></tr>");
 
   // Attitude Orientation
   client.println("<tr><td>Yaw</td>");
   client.println("<td><a href='/off'>OFF</a></td>");
   client.println("<td><a href='/45deg'>45</a></td>");
   client.println("<td><a href='/90deg'>90</a></td>");
-  client.println("<td><a href='/180deg'>180</a></td></tr>");
+  client.println("<td><a href='/180deg'>180</a></td>");
+  client.println("<td><a href='/270deg'>270</a></td></tr>");
   client.println("</table>");
   
   // The HTTP response ends with another blank line
@@ -412,7 +420,9 @@ void performRequest(String line) {
   } else if (line.endsWith("GET /90deg")) {  // Go to 90 deg
     yaw = 90;
   } else if (line.endsWith("GET /180deg")) {  // Go to 180 deg
-    yaw = 179.5;
+    yaw = 180;
+  } else if (line.endsWith("GET /270deg")) {  // Go to 270 deg
+    yaw = 270;
   }
 }
 
