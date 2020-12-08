@@ -1,26 +1,5 @@
 /*
   WiFi Web Server
-
-  Based on SimpleWebServerWiFi in WiFi Examples.
-
-  A simple web server that lets you control LEDs via the web.
-  This sketch will print the IP address of your WiFi device (once connected)
-  to the Serial Monitor.  From there, you can open that address in a web browser
-  to turn on and off the LEDs.
-
-  If the IP address of your device is yourAddress:
-  http://yourAddress                home page
-  http://yourAddress/redLED/on      turns on the red LED
-  http://yourAddress/redLED/off     turns off the red LED
-  http://yourAddress/yellowLED/on   turns on the yellow LED
-  http://yourAddress/yellowLED/off  turns off the yellow LED
-  http://yourAddress/greenLED/on    turns on the green LED
-  http://yourAddress/greenLED/off turns off the green LED
-
-  This sketch works with the new Arduino Uno WiFi Rev2 board along with the
-  original Arduino Uno with an Arduino WiFi Shield attached.
-  Uncomment the appropriate #include line for your particular WiFi device
-  configuration.
   
   This example is written for a network using WPA encryption.  For WEP, change
   the Wifi.begin() call accordingly.
@@ -36,8 +15,6 @@
 
 
 #include <SPI.h>
-// Uncomment the appropriate include line below for your WiFi device
-// #include <WiFi.h>      // for use with Arduino WiFi Shield
 #include <WiFiNINA.h>  // for use with Arduino Uno WiFi Rev2
 
 // Network
@@ -47,13 +24,6 @@ char pass[] = "x10foswswvpee";  // your network password
 //char pass[] = "demodemo";  // your network password
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
-
-
-int yaw = 0;
-double error = 0;
-double error_buff = 0;
-double error_avg = 0;
-int n = 0;
 
 
         // I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
@@ -142,9 +112,9 @@ int n = 0;
         //double Kp = 180, Ki = 5, Kd = 15; // PID−parameters 
         //double Kp = 100, Ki = 9, Kd = 36; // PID−parameters (0.2 o.s. 18dps for 90deg)
         double Kp = 100, Ki = 10, Kd = 60; // PID−parameters (0.2 o.s. 18dps for 90deg)
-        //double Kp = 50, Ki = 3, Kd = 1; // PID−parameters (untuned and not much slower)
         
-        float yaw_deg; // stores the angle the cube is rotated 
+        double yaw_deg; // stores the angle the cube is rotated 
+        double yaw = 0;
         
         double Time;
         int flag = 0;
@@ -161,8 +131,7 @@ void setup() {
           Fastwire::setup(400, true);
         #endif
 
-  
-  Serial.begin(9600);  // initialize serial communication
+    Serial.begin(9600);  // initialize serial communication
         while (!Serial); // wait for Leonardo enumeration, others continue immediately
       
         // NOTE: 8MHz or slower host processors, like the Teensy @ 3.3V or Arduino
@@ -311,22 +280,10 @@ void loop() {
         //    Serial.print(ypr[1] * 180 / M_PI);
         //    Serial.print("\t");
         //    Serial.print(ypr[2] * 180 / M_PI);
-            
               mpu.dmpGetAccel(&aa, fifoBuffer);
-        //      Serial.print("\tRaw Accl XYZ\t");
-        //      Serial.print(aa.x);
-        //      Serial.print("\t");
-        //      Serial.print(aa.y);
-        //      Serial.print("\t");
-        //      Serial.print(aa.z);
               mpu.dmpGetGyro(&gy, fifoBuffer);
         //      Serial.print("\tRaw Gyro XYZ\t");
-        //      Serial.print(gy.x);
-        //      Serial.print("\t");
-        //      Serial.print(gy.y);
-        //      Serial.print("\t");
         //      Serial.print(gy.z / 65.4);
-            
         //    Serial.println();
         
         #endif
@@ -371,36 +328,10 @@ void loop() {
         // ================================================================
         // ===                      S.A.C. Loop                         ===
         // ================================================================
-          //n =+ 1;
-          
           setpoint = yaw; // User input to slew to desired orientation.
           //setpoint = 90;  // Override setpoint (for debugging).
           
           yaw_deg = ypr[0] * 180 / M_PI; // Variable to hold current yaw angle of the satellite.
-
-//          if (setpoint > 0) {
-//        
-//            // Code for PID 
-//          input = yaw_deg; // Uses angle as input signal for the PID controller.
-//          
-//          if(micros()-Time > 8000000){  // Needed a delay so that the IMU could stabilaze, using delay() caused overflow. 
-//              
-//              PID_controller.Compute();   // Compute new output value.
-//          
-//            // if((input>setpoint) || (input<setpoint)){
-//              if(output >= 0){ // Since arduino only works with positive current, the direction was swapped instead. 
-//              pwmSignal = output; 
-//              digitalWrite(inaPin, LOW); //CW direction of motor. 
-//              digitalWrite(inbPin, HIGH); 
-//            } else {
-//              pwmSignal = -1*output; 
-//              digitalWrite(inaPin, HIGH); //CCW direction of motor. 
-//              digitalWrite(inbPin, LOW); 
-//              }
-//            }
-//          } else if (setpoint == 0) {
-//            pwmSignal = 0;
-//          }
 
           if (setpoint > 0) {
         
@@ -425,20 +356,14 @@ void loop() {
           } else if (setpoint == 0) {
             pwmSignal = 0;
           }
-//error = abs(setpoint - input);
-//if (input >= 0.5) {
-//n = n + 1;         
-//error_buff = error_buff + error;
-//error_avg = error_buff / n;
-//}
-          // Output pwm signal 
+
+          // Output PWM signal 
           analogWrite(pwmPin, pwmSignal); // Send PWM signal to DC motor.
-          
           
           //  Print values
           Serial.print("Setpoint: ");
-//          Serial.print(setpoint, 0);
-Serial.print("180");
+          //Serial.print(setpoint, 0);
+          Serial.print("180");
           Serial.print("°");
           Serial.print("\t");
           Serial.print("Yaw: ");
@@ -448,8 +373,6 @@ Serial.print("180");
           Serial.print("Power: ");
           Serial.print(pwmSignal / 255 * 100, 0);
           Serial.print(" %");
-//          Serial.print("\t");
-//          Serial.print(error_avg);
           Serial.println();
           
 }
@@ -465,7 +388,6 @@ void showWebPage(WiFiClient client) {
   // The content of the HTTP response follows the header
   client.println("<h1>Satellite Attitude Control</h1>");
   client.println("<table border=1 style='text-align:center'>");
-
   client.println("<tr><th>Component</th><th>Power</th><th colspan='3'>Set Angle</th></tr>");
 
   // Attitude Orientation
@@ -474,10 +396,7 @@ void showWebPage(WiFiClient client) {
   client.println("<td><a href='/45deg'>45</a></td>");
   client.println("<td><a href='/90deg'>90</a></td>");
   client.println("<td><a href='/180deg'>180</a></td></tr>");
-
   client.println("</table>");
-  
-  Serial.println(yaw);
   
   // The HTTP response ends with another blank line
   client.println();
