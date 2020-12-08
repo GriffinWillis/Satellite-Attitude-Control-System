@@ -41,15 +41,20 @@
 #include <WiFiNINA.h>  // for use with Arduino Uno WiFi Rev2
 
 // Network
-//char ssid[] = "Sarah's Iphone";     // your network SSID (name)
-//char pass[] = "x10foswswvpee";  // your network password
-char ssid[] = "Airwave-5G-02-byz1w0xu1";     // your network SSID (name)
-char pass[] = "";  // your network password
+char ssid[] = "Sarah's Iphone";     // your network SSID (name)
+char pass[] = "x10foswswvpee";  // your network password
+//char ssid[] = "Jess's iPhone";     // your network SSID (name)
+//char pass[] = "demodemo";  // your network password
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
 
 int yaw = 0;
+double error = 0;
+double error_buff = 0;
+double error_avg = 0;
+int n = 0;
+
 
         // I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
         // for both classes must be in the include path of your project
@@ -134,8 +139,10 @@ int yaw = 0;
         double setpoint; 
         
         //Different PID setups 
-        double Kp = 125, Ki = 7, Kd = 17; // PID−parameters 
-        //double Kp = 200, Ki = 4, Kd = 13; // PID−parameters 
+        //double Kp = 180, Ki = 5, Kd = 15; // PID−parameters 
+        //double Kp = 100, Ki = 9, Kd = 36; // PID−parameters (0.2 o.s. 18dps for 90deg)
+        double Kp = 100, Ki = 10, Kd = 60; // PID−parameters (0.2 o.s. 18dps for 90deg)
+        //double Kp = 50, Ki = 3, Kd = 1; // PID−parameters (untuned and not much slower)
         
         float yaw_deg; // stores the angle the cube is rotated 
         
@@ -154,9 +161,6 @@ void setup() {
           Fastwire::setup(400, true);
         #endif
 
-                // set up the LCD's number of columns and rows:
-//                lcd.begin(16, 2);
-//                lcd.clear();
   
   Serial.begin(9600);  // initialize serial communication
         while (!Serial); // wait for Leonardo enumeration, others continue immediately
@@ -245,7 +249,6 @@ void setup() {
           PID_controller.SetMode(AUTOMATIC); 
           PID_controller.SetTunings(Kp,Ki,Kd); 
           PID_controller.SetOutputLimits(-255, 255);  // Max is 255 
-        //  PID_controller.SetOutputLimits(-128, 128);  // 50% max power
         
         
 
@@ -278,60 +281,60 @@ void setup() {
 
 
 void loop() {
-//        // if programming failed, don't try to do anything
-//        if (!dmpReady) return;
-//        // read a packet from FIFO
-//        if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
-//
-//        #ifdef OUTPUT_TEAPOT
-//            // display quaternion values in InvenSense Teapot demo format:
-//            teapotPacket[2] = fifoBuffer[0];
-//            teapotPacket[3] = fifoBuffer[1];
-//            teapotPacket[4] = fifoBuffer[4];
-//            teapotPacket[5] = fifoBuffer[5];
-//            teapotPacket[6] = fifoBuffer[8];
-//            teapotPacket[7] = fifoBuffer[9];
-//            teapotPacket[8] = fifoBuffer[12];
-//            teapotPacket[9] = fifoBuffer[13];
-//            Serial.write(teapotPacket, 14);
-//            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
-//        #endif
-//
-//          #ifdef OUTPUT_READABLE_YAWPITCHROLL
-//            // display Euler angles in degrees
-//            mpu.dmpGetQuaternion(&q, fifoBuffer);
-//            mpu.dmpGetGravity(&gravity, &q);
-//            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-//        //    Serial.print("ypr\t");
-//        //    Serial.print(ypr[0] * 180 / M_PI);
-//        //    Serial.print("\t");
-//        //    Serial.print(ypr[1] * 180 / M_PI);
-//        //    Serial.print("\t");
-//        //    Serial.print(ypr[2] * 180 / M_PI);
-//            
-//              mpu.dmpGetAccel(&aa, fifoBuffer);
-//        //      Serial.print("\tRaw Accl XYZ\t");
-//        //      Serial.print(aa.x);
-//        //      Serial.print("\t");
-//        //      Serial.print(aa.y);
-//        //      Serial.print("\t");
-//        //      Serial.print(aa.z);
-//              mpu.dmpGetGyro(&gy, fifoBuffer);
-//        //      Serial.print("\tRaw Gyro XYZ\t");
-//        //      Serial.print(gy.x);
-//        //      Serial.print("\t");
-//        //      Serial.print(gy.y);
-//        //      Serial.print("\t");
-//        //      Serial.print(gy.z / 65.4);
-//            
-//        //    Serial.println();
-//        
-//        #endif
-//        
-//            // blink LED to indicate activity
-//            blinkState = !blinkState;
-//            digitalWrite(LED_PIN, blinkState);
-//          }
+        // if programming failed, don't try to do anything
+        if (!dmpReady) return;
+        // read a packet from FIFO
+        if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+
+        #ifdef OUTPUT_TEAPOT
+            // display quaternion values in InvenSense Teapot demo format:
+            teapotPacket[2] = fifoBuffer[0];
+            teapotPacket[3] = fifoBuffer[1];
+            teapotPacket[4] = fifoBuffer[4];
+            teapotPacket[5] = fifoBuffer[5];
+            teapotPacket[6] = fifoBuffer[8];
+            teapotPacket[7] = fifoBuffer[9];
+            teapotPacket[8] = fifoBuffer[12];
+            teapotPacket[9] = fifoBuffer[13];
+            Serial.write(teapotPacket, 14);
+            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
+        #endif
+
+          #ifdef OUTPUT_READABLE_YAWPITCHROLL
+            // display Euler angles in degrees
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+        //    Serial.print("ypr\t");
+        //    Serial.print(ypr[0] * 180 / M_PI);
+        //    Serial.print("\t");
+        //    Serial.print(ypr[1] * 180 / M_PI);
+        //    Serial.print("\t");
+        //    Serial.print(ypr[2] * 180 / M_PI);
+            
+              mpu.dmpGetAccel(&aa, fifoBuffer);
+        //      Serial.print("\tRaw Accl XYZ\t");
+        //      Serial.print(aa.x);
+        //      Serial.print("\t");
+        //      Serial.print(aa.y);
+        //      Serial.print("\t");
+        //      Serial.print(aa.z);
+              mpu.dmpGetGyro(&gy, fifoBuffer);
+        //      Serial.print("\tRaw Gyro XYZ\t");
+        //      Serial.print(gy.x);
+        //      Serial.print("\t");
+        //      Serial.print(gy.y);
+        //      Serial.print("\t");
+        //      Serial.print(gy.z / 65.4);
+            
+        //    Serial.println();
+        
+        #endif
+        
+            // blink LED to indicate activity
+            blinkState = !blinkState;
+            digitalWrite(LED_PIN, blinkState);
+          }
 
   
   WiFiClient client = server.available();  // listen for incoming clients
@@ -368,14 +371,40 @@ void loop() {
         // ================================================================
         // ===                      S.A.C. Loop                         ===
         // ================================================================
+          //n =+ 1;
+          
           setpoint = yaw; // User input to slew to desired orientation.
+          //setpoint = 90;  // Override setpoint (for debugging).
           
           yaw_deg = ypr[0] * 180 / M_PI; // Variable to hold current yaw angle of the satellite.
+
+//          if (setpoint > 0) {
+//        
+//            // Code for PID 
+//          input = yaw_deg; // Uses angle as input signal for the PID controller.
+//          
+//          if(micros()-Time > 8000000){  // Needed a delay so that the IMU could stabilaze, using delay() caused overflow. 
+//              
+//              PID_controller.Compute();   // Compute new output value.
+//          
+//            // if((input>setpoint) || (input<setpoint)){
+//              if(output >= 0){ // Since arduino only works with positive current, the direction was swapped instead. 
+//              pwmSignal = output; 
+//              digitalWrite(inaPin, LOW); //CW direction of motor. 
+//              digitalWrite(inbPin, HIGH); 
+//            } else {
+//              pwmSignal = -1*output; 
+//              digitalWrite(inaPin, HIGH); //CCW direction of motor. 
+//              digitalWrite(inbPin, LOW); 
+//              }
+//            }
+//          } else if (setpoint == 0) {
+//            pwmSignal = 0;
+//          }
 
           if (setpoint > 0) {
         
             // Code for PID 
-          //setpoint = 90;
           input = yaw_deg; // Uses angle as input signal for the PID controller.
           
           if(micros()-Time > 8000000){  // Needed a delay so that the IMU could stabilaze, using delay() caused overflow. 
@@ -383,11 +412,11 @@ void loop() {
               PID_controller.Compute();   // Compute new output value.
           
             // if((input>setpoint) || (input<setpoint)){
-              if(output >= 0){ // Since arduino only works with positive current, the direction was swapped instead. 
+              if(input <= setpoint){ // Since arduino only works with positive current, the direction was swapped instead. 
               pwmSignal = output; 
               digitalWrite(inaPin, LOW); //CW direction of motor. 
               digitalWrite(inbPin, HIGH); 
-            } else {
+            } else if (input > setpoint) {
               pwmSignal = -1*output; 
               digitalWrite(inaPin, HIGH); //CCW direction of motor. 
               digitalWrite(inbPin, LOW); 
@@ -396,16 +425,32 @@ void loop() {
           } else if (setpoint == 0) {
             pwmSignal = 0;
           }
+//error = abs(setpoint - input);
+//if (input >= 0.5) {
+//n = n + 1;         
+//error_buff = error_buff + error;
+//error_avg = error_buff / n;
+//}
           // Output pwm signal 
           analogWrite(pwmPin, pwmSignal); // Send PWM signal to DC motor.
           
           
           //  Print values
+          Serial.print("Setpoint: ");
+//          Serial.print(setpoint, 0);
+Serial.print("180");
+          Serial.print("°");
+          Serial.print("\t");
+          Serial.print("Yaw: ");
           Serial.print(yaw_deg);
+          Serial.print("°");
           Serial.print("\t");
-          Serial.print(setpoint);
-          Serial.print("\t");
-          Serial.println(pwmSignal);
+          Serial.print("Power: ");
+          Serial.print(pwmSignal / 255 * 100, 0);
+          Serial.print(" %");
+//          Serial.print("\t");
+//          Serial.print(error_avg);
+          Serial.println();
           
 }
 
@@ -421,12 +466,11 @@ void showWebPage(WiFiClient client) {
   client.println("<h1>Satellite Attitude Control</h1>");
   client.println("<table border=1 style='text-align:center'>");
 
-  client.println("<tr><th>Component</th><th>Power</th><th colspan='4'>Set Angle</th></tr>");
+  client.println("<tr><th>Component</th><th>Power</th><th colspan='3'>Set Angle</th></tr>");
 
   // Attitude Orientation
-  client.print("<tr><td>Yaw</td>");
-  client.print("<td><a href='/off'>OFF</a></td>");
-  client.println("<td><a href='/20deg'>20</a></td>");
+  client.println("<tr><td>Yaw</td>");
+  client.println("<td><a href='/off'>OFF</a></td>");
   client.println("<td><a href='/45deg'>45</a></td>");
   client.println("<td><a href='/90deg'>90</a></td>");
   client.println("<td><a href='/180deg'>180</a></td></tr>");
@@ -444,14 +488,12 @@ void showWebPage(WiFiClient client) {
 void performRequest(String line) {
   if (line.endsWith("GET /off")) {   // Turn off motor
     yaw = 0;
-  } else if (line.endsWith("GET /20deg")) {   // Go to 20 deg
-    yaw = 20;
   } else if (line.endsWith("GET /45deg")) {  // Go to 45 deg
     yaw = 45;
   } else if (line.endsWith("GET /90deg")) {  // Go to 90 deg
     yaw = 90;
   } else if (line.endsWith("GET /180deg")) {  // Go to 180 deg
-    yaw = 180;
+    yaw = 179.5;
   }
 }
 
