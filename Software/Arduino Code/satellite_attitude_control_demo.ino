@@ -118,10 +118,8 @@ WiFiServer server(80);
         double Time;
         
         //Different PID setups 
-        //double Kp = 180, Ki = 5, Kd = 15; // PID−parameters 
-        //double Kp = 100, Ki = 9, Kd = 36; // PID−parameters
-        double Kp = 100, Ki = 10, Kd = 60; // PID−parameters
-        
+        double Kp = 100, Ki = 10, Kd = 55; // PID−parameters (make changes here if needed)
+         
         // Define PID controller 
         PID PID_controller(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
 
@@ -160,12 +158,15 @@ void setup() {
         Serial.println(F("Initializing MPU6050..."));
         devStatus = mpu.dmpInitialize();
 
-        mpu.setXGyroOffset(542);
-        mpu.setYGyroOffset(-2);
+// Offsets for the MPU6050
+//           X Accel  Y Accel  Z Accel   X Gyro   Y Gyro   Z Gyro
+//OFFSETS     1056,    1213,    5374,     536,       3,       5
+        mpu.setXGyroOffset(536);
+        mpu.setYGyroOffset(3);
         mpu.setZGyroOffset(5);
-        mpu.setXAccelOffset(1036);
-        mpu.setYAccelOffset(1167);
-        mpu.setZAccelOffset(5392);
+        mpu.setXAccelOffset(1056);
+        mpu.setYAccelOffset(1213);
+        mpu.setZAccelOffset(5374);
 
         // make sure it worked (returns 0 if so)
         if (devStatus == 0) {
@@ -173,20 +174,20 @@ void setup() {
           mpu.CalibrateAccel(6);
           mpu.CalibrateGyro(6);
           Serial.println();
-          mpu.PrintActiveOffsets();
+          //mpu.PrintActiveOffsets();
           // turn on the DMP, now that it's ready
-          Serial.println(F("Enabling DMP..."));
+          //Serial.println(F("Enabling DMP..."));
           mpu.setDMPEnabled(true);
       
           // enable Arduino interrupt detection
-          Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-          Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-          Serial.println(F(")..."));
+          //Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
+          //Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
+          //Serial.println(F(")..."));
           attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
           mpuIntStatus = mpu.getIntStatus();
       
           // set our DMP Ready flag so the main loop() function knows it's okay to use it
-          Serial.println(F("DMP ready! Waiting for first interrupt..."));
+          //Serial.println(F("DMP ready! Waiting for first interrupt..."));
           dmpReady = true;
       
           // get expected DMP packet size for later comparison
@@ -376,7 +377,8 @@ void loop() {
           Serial.print("Angular rate: ");
           Serial.print(gy.z / 65.4);
           Serial.print(" °/s");
-          Serial.println();    
+          Serial.println();  
+            
 }
 
 
