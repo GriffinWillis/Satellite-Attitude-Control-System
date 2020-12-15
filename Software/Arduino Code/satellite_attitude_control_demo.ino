@@ -154,7 +154,7 @@ void setup() {
         Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
       
         // wait for ready
-        Serial.println(F("\nSend any character to begin MPU6050 calibration and start the demo: "));
+        Serial.println(F("\nSend any character to begin MPU6050 calibration: "));
         while (Serial.available() && Serial.read()); // empty buffer
         while (!Serial.available());                 // wait for data
         while (Serial.available() && Serial.read()); // empty buffer again
