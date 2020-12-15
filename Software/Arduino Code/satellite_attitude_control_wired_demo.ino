@@ -1,7 +1,7 @@
 /* Single-Axis Satellite Attitude PID Control System Using a Reaction Wheel
  *  
- *  University of Missouri - Undergraduate Capstone Project - December 2020
- *  By: Griffin Willis, Jess Emerson, Sarah Geisen, Tori La Rose
+ * University of Missouri - Undergraduate Capstone Project - December 2020
+ * By: Griffin Willis, Jess Emerson, Sarah Geisen, Tori La Rose
  * 
  * REFERENCES:
  * PID Control Loop - base code sourced from an example created
@@ -24,16 +24,17 @@
  * DISCLAIMER: All Arduino code is open-source and free to the public. 
  *             No patents were infringed upon.
  * 
-*/
+ */
 
 #include <SPI.h>
-#include <WiFiNINA.h>  // for use with Arduino Uno WiFi Rev2
+//#include <WiFiNINA.h>  // for use with Arduino Uno WiFi Rev2
 
-// THIS CODE IS USED FOR THE WIFI WEB SERVER
+/* THIS CODE IS USED FOR THE WIFI WEB SERVER
 char ssid[] = "ENTER SSID HERE";   // your network SSID (name)
 char pass[] = "ENTER PASSWORD HERE OR LEAVE BLANK";    // your network password
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
+*/
 
           // I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
           // for both classes must be in the include path of your project
@@ -163,15 +164,10 @@ void setup() {
           mpu.CalibrateAccel(6);
           mpu.CalibrateGyro(6);
           Serial.println();
-          //mpu.PrintActiveOffsets();
           // turn on the DMP, now that it's ready
-          //Serial.println(F("Enabling DMP..."));
           mpu.setDMPEnabled(true);
       
           // enable Arduino interrupt detection
-          //Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-          //Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));
-          //Serial.println(F(")..."));
           attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
           mpuIntStatus = mpu.getIntStatus();
       
@@ -213,8 +209,8 @@ void setup() {
           while (!Serial.available());                 // wait for data
           setpoint = Serial.parseInt();                // store user input into a variable
           while (Serial.available() && Serial.read()); // empty buffer again
-        
-// THIS CODE IS USED FOR THE WIFI WEB SERVER  
+
+/* THIS CODE IS USED FOR THE WIFI WEB SERVER  
 // Check for the presence of the WiFi device
 if (WiFi.status() == WL_NO_SHIELD || WiFi.status() == WL_NO_MODULE) {
   Serial.println("Communication with WiFi device failed!");
@@ -240,8 +236,8 @@ while (status != WL_CONNECTED) {
 server.begin();     // start the web server on port 80
 printWifiStatus();  // you're connected now, so print the status
 Serial.println();
+*/         
 }
-
 
 // ================================================================
 // ===                       MAIN LOOP                          ===
@@ -281,7 +277,7 @@ void loop() {
           digitalWrite(LED_PIN, blinkState);
           }
 
-// THIS CODE IS USED FOR THE WIFI WEB SERVER  
+/* THIS CODE IS USED FOR THE WIFI WEB SERVER  
 WiFiClient client = server.available();  // listen for incoming clients
 
 if (client) {                            // if you get a client,
@@ -312,6 +308,7 @@ if (client) {                            // if you get a client,
   Serial.println("Client disconnected.");
   Serial.println();
 }
+*/
 
           // THIS CODE IS FOR THE ACTUAL PID LOOP AND MOTOR CONTROL
           yaw_deg = ypr[0] * 180 / M_PI;  // Variable to hold current yaw angle of the satellite.
@@ -367,6 +364,7 @@ if (client) {                            // if you get a client,
 // ================================================================
 // ===                     WIFI FUNCTIONS                       ===
 // ================================================================
+/*
 void showWebPage(WiFiClient client) {
   // HTTP headers always start with a response code (e.g. HTTP/1.1 200 OK)
   // and a Content-Type so the client knows what's coming, then a blank line
@@ -428,3 +426,4 @@ void printWifiStatus() {
   Serial.print("To see this page in action, open a browser to http://");
   Serial.println(ip);
 }
+*/
