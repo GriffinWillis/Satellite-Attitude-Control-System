@@ -206,13 +206,6 @@ void setup() {
           PID_controller.SetMode(AUTOMATIC); 
           PID_controller.SetTunings(Kp,Ki,Kd); 
           PID_controller.SetOutputLimits(-255, 255);  // Max is 255 
-
-          // Wait for user input of desired setpoint
-          Serial.println(F("\nInput desired setpoint for orientation: "));
-          while (Serial.available() && Serial.read()); // empty buffer
-          while (!Serial.available());                 // wait for data
-          setpoint = Serial.parseInt();                // store user input into a variable
-          while (Serial.available() && Serial.read()); // empty buffer again
         
 // THIS CODE IS USED FOR THE WIFI WEB SERVER  
 // Check for the presence of the WiFi device
@@ -233,7 +226,7 @@ while (status != WL_CONNECTED) {
   Serial.print("Attempting to connect to network named: ");
   Serial.println(ssid);  // print the network name (SSID)
 
-  // Connect to WPA/WPA2 network.  Change this line if using open or WEP network.
+  // Connect to WPA/WPA2 network. Change this line if using open or WEP network.
   status = WiFi.begin(ssid, pass);
   delay(10000);  // wait 10 seconds for connection
 }
@@ -338,7 +331,7 @@ if (client) {                            // if you get a client,
                 }
             }
           } else if (setpoint == 0) {
-            pwmSignal = 0;
+            pwmSignal = 0;  // Turns off motor.
           }
 
           // Output PWM signal 
@@ -395,15 +388,15 @@ void showWebPage(WiFiClient client) {
 
 void performRequest(String line) {
   if (line.endsWith("GET /off")) {   // Turn off motor
-    yaw = 0;
+    setpoint = 0;
   } else if (line.endsWith("GET /45deg")) {  // Go to 45 deg
-    yaw = 45;
+    setpoint = 45;
   } else if (line.endsWith("GET /90deg")) {  // Go to 90 deg
-    yaw = 90;
+    setpoint = 90;
   } else if (line.endsWith("GET /180deg")) {  // Go to 180 deg
-    yaw = 180;
+    setpoint = 180;
   } else if (line.endsWith("GET /270deg")) {  // Go to 270 deg
-    yaw = 270;
+    setpoint = 270;
   }
 }
 
