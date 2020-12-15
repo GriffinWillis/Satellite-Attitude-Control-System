@@ -113,17 +113,14 @@ WiFiServer server(80);
         double input; 
         double output; 
         double setpoint; 
+
+        double yaw_deg; // stores the angle the cube is rotated 
+        double Time;
         
         //Different PID setups 
         //double Kp = 180, Ki = 5, Kd = 15; // PID−parameters 
         //double Kp = 100, Ki = 9, Kd = 36; // PID−parameters
         double Kp = 100, Ki = 10, Kd = 60; // PID−parameters
-        
-        double yaw_deg; // stores the angle the cube is rotated 
-        double yaw = 0;
-        
-        double Time;
-        int flag = 0;
         
         // Define PID controller 
         PID PID_controller(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
@@ -265,38 +262,38 @@ void setup() {
         // ================================================================
 void loop() {
 //  Code needed for gathering MPU6050 data        
-//        // if programming failed, don't try to do anything
-//        if (!dmpReady) return;
-//        // read a packet from FIFO
-//        if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
-//
-//        #ifdef OUTPUT_TEAPOT
-//            // display quaternion values in InvenSense Teapot demo format:
-//            teapotPacket[2] = fifoBuffer[0];
-//            teapotPacket[3] = fifoBuffer[1];
-//            teapotPacket[4] = fifoBuffer[4];
-//            teapotPacket[5] = fifoBuffer[5];
-//            teapotPacket[6] = fifoBuffer[8];
-//            teapotPacket[7] = fifoBuffer[9];
-//            teapotPacket[8] = fifoBuffer[12];
-//            teapotPacket[9] = fifoBuffer[13];
-//            Serial.write(teapotPacket, 14);
-//            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
-//        #endif
-//
-//        #ifdef OUTPUT_READABLE_YAWPITCHROLL
-//            // display Euler angles in degrees
-//            mpu.dmpGetQuaternion(&q, fifoBuffer);
-//            mpu.dmpGetGravity(&gravity, &q);
-//            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-//            mpu.dmpGetAccel(&aa, fifoBuffer);
-//            mpu.dmpGetGyro(&gy, fifoBuffer);
-//        #endif
-//        
-//            // blink LED to indicate activity
-//            blinkState = !blinkState;
-//            digitalWrite(LED_PIN, blinkState);
-//          }
+        // if programming failed, don't try to do anything
+        if (!dmpReady) return;
+        // read a packet from FIFO
+        if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+
+        #ifdef OUTPUT_TEAPOT
+            // display quaternion values in InvenSense Teapot demo format:
+            teapotPacket[2] = fifoBuffer[0];
+            teapotPacket[3] = fifoBuffer[1];
+            teapotPacket[4] = fifoBuffer[4];
+            teapotPacket[5] = fifoBuffer[5];
+            teapotPacket[6] = fifoBuffer[8];
+            teapotPacket[7] = fifoBuffer[9];
+            teapotPacket[8] = fifoBuffer[12];
+            teapotPacket[9] = fifoBuffer[13];
+            Serial.write(teapotPacket, 14);
+            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
+        #endif
+
+        #ifdef OUTPUT_READABLE_YAWPITCHROLL
+            // display Euler angles in degrees
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+            mpu.dmpGetAccel(&aa, fifoBuffer);
+            mpu.dmpGetGyro(&gy, fifoBuffer);
+        #endif
+        
+            // blink LED to indicate activity
+            blinkState = !blinkState;
+            digitalWrite(LED_PIN, blinkState);
+          }
 
 /*  THIS CODE IS USED FOR THE WIFI WEB SERVER  
   WiFiClient client = server.available();  // listen for incoming clients
@@ -330,10 +327,6 @@ void loop() {
     Serial.println();
   }
 */
-
-        // ================================================================
-        // ===                      S.A.C. Loop                         ===
-        // ================================================================
 
           //setpoint = 90;                // Override setpoint here (for debugging).
 
